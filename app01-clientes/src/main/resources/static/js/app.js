@@ -1,46 +1,33 @@
-const API_BASE = '/api/clientes';
-let editando = false;
+// Configuración dinámica de rutas para Nginx
+const APP_BASE = '/clientes';
+const API_BASE = `${APP_BASE}/api`;
 
-// Cargar clientes al iniciar
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Cargando aplicación de Clientes...');
-    cargarClientes();
-});
+console.log(`🏁 Aplicación Clientes iniciada - Base: ${APP_BASE}`);
 
-// Manejar envío del formulario
-document.getElementById('cliente-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    guardarCliente();
-});
-
-document.getElementById('cancel-btn').addEventListener('click', cancelarEdicion);
-
+// Función para cargar clientes
 async function cargarClientes() {
     try {
-        console.log('Cargando clientes desde:', API_BASE);
-        const response = await fetch(API_BASE);
+        console.log(`📡 Cargando clientes desde: ${API_BASE}/clientes`);
+
+        const response = await fetch(`${API_BASE}/clientes`);
         if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor: ' + response.status);
+            throw new Error(`Error en la respuesta: ${response.status}`);
         }
+
         const clientes = await response.json();
-        console.log('Clientes cargados:', clientes);
+        console.log(`✅ ${clientes.length} clientes cargados`);
         mostrarClientes(clientes);
+
     } catch (error) {
-        console.error('Error cargando clientes:', error);
-        alert('Error al cargar los clientes: ' + error.message);
+        console.error('❌ Error cargando clientes:', error);
+        mostrarError('Error al cargar los clientes: ' + error.message);
     }
 }
 
+// Función para mostrar clientes en la tabla
 function mostrarClientes(clientes) {
     const tbody = document.getElementById('clientes-body');
     tbody.innerHTML = '';
-
-    if (clientes.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="6" style="text-align: center;">No hay clientes registrados</td>`;
-        tbody.appendChild(tr);
-        return;
-    }
 
     clientes.forEach(cliente => {
         const tr = document.createElement('tr');
@@ -48,112 +35,79 @@ function mostrarClientes(clientes) {
             <td>${cliente.id}</td>
             <td>${cliente.nombre}</td>
             <td>${cliente.email}</td>
-            <td>${cliente.telefono || '-'}</td>
-            <td>${cliente.ciudad || '-'}</td>
-            <td class="actions">
+            <td>${cliente.telefono || ''}</td>
+            <td>${cliente.direccion || ''}</td>
+            <td>
                 <button onclick="editarCliente(${cliente.id})">✏️ Editar</button>
-                <button class="delete" onclick="eliminarCliente(${cliente.id})">🗑️ Eliminar</button>
+                <button onclick="eliminarCliente(${cliente.id})">🗑️ Eliminar</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-async function guardarCliente() {
+// Función para crear/editar cliente
+async function guardarCliente(event) {
+    event.preventDefault();
+
     const cliente = {
         nombre: document.getElementById('nombre').value,
         email: document.getElementById('email').value,
         telefono: document.getElementById('telefono').value,
-        ciudad: document.getElementById('ciudad').value
+        direccion: document.getElementById('direccion').value
     };
 
-    const id = document.getElementById('cliente-id').value;
-
     try {
-        let response;
-        if (editando) {
-            response = await fetch(`${API_BASE}/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(cliente)
-            });
-        } else {
-            response = await fetch(API_BASE, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(cliente)
-            });
+        const url = document.getElementById('cliente-id').value
+            ? `${API_BASE}/clientes/${document.getElementById('cliente-id').value}`
+            : `${API_BASE}/clientes`;
+
+        const method = document.getElementById('cliente-id').value ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(cliente)
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al guardar el cliente');
         }
 
-        if (response.ok) {
-            limpiarFormulario();
-            cargarClientes();
-            alert(editando ? 'Cliente actualizado correctamente' : 'Cliente creado correctamente');
-        } else {
-            const error = await response.text();
-            alert('Error: ' + error);
-        }
+        limpiarFormulario();
+        cargarClientes();
+        mostrarMensaje('Cliente guardado correctamente');
+
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión: ' + error.message);
+        mostrarError('Error al guardar el cliente: ' + error.message);
     }
 }
 
-async function editarCliente(id) {
-    try {
-        const response = await fetch(`${API_BASE}/${id}`);
-        if (!response.ok) {
-            throw new Error('Cliente no encontrado');
-        }
-        const cliente = await response.json();
-
-        document.getElementById('cliente-id').value = cliente.id;
-        document.getElementById('nombre').value = cliente.nombre;
-        document.getElementById('email').value = cliente.email;
-        document.getElementById('telefono').value = cliente.telefono || '';
-        document.getElementById('ciudad').value = cliente.ciudad || '';
-
-        document.getElementById('form-title').textContent = 'Editar Cliente';
-        document.getElementById('submit-btn').textContent = 'Actualizar Cliente';
-        document.getElementById('cancel-btn').style.display = 'inline-block';
-        editando = true;
-
-        document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-    } catch (error) {
-        console.error('Error cargando cliente:', error);
-        alert('Error al cargar el cliente: ' + error.message);
-    }
+// Funciones auxiliares
+function mostrarError(mensaje) {
+    alert('❌ ' + mensaje);
 }
 
-async function eliminarCliente(id) {
-    if (confirm('¿Estás seguro de eliminar este cliente?')) {
-        try {
-            const response = await fetch(`${API_BASE}/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
-                cargarClientes();
-                alert('Cliente eliminado correctamente');
-            } else {
-                alert('Error eliminando cliente');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error de conexión: ' + error.message);
-        }
-    }
-}
-
-function cancelarEdicion() {
-    limpiarFormulario();
-    document.getElementById('form-title').textContent = 'Agregar Nuevo Cliente';
-    document.getElementById('submit-btn').textContent = 'Guardar Cliente';
-    document.getElementById('cancel-btn').style.display = 'none';
-    editando = false;
+function mostrarMensaje(mensaje) {
+    alert('✅ ' + mensaje);
 }
 
 function limpiarFormulario() {
     document.getElementById('cliente-form').reset();
     document.getElementById('cliente-id').value = '';
 }
+
+// Cargar clientes al iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM cargado - Iniciando aplicación Clientes');
+    cargarClientes();
+
+    // Configurar el formulario
+    const form = document.getElementById('cliente-form');
+    if (form) {
+        form.addEventListener('submit', guardarCliente);
+    }
+});

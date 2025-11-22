@@ -1,66 +1,56 @@
-const API_BASE = '/api/proveedores';
-let editando = false;
+// Configuración dinámica de rutas para Nginx
+const APP_BASE = '/proveedores';
+const API_BASE = `${APP_BASE}/api`;
 
-// Cargar proveedores al iniciar
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Cargando aplicación de Proveedores...');
-    cargarProveedores();
-});
+console.log(`🏁 Aplicación Proveedores iniciada - Base: ${APP_BASE}`);
 
-// Manejar envío del formulario
-document.getElementById('proveedor-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    guardarProveedor();
-});
-
-document.getElementById('cancel-btn').addEventListener('click', cancelarEdicion);
-
+// Función para cargar proveedores
 async function cargarProveedores() {
     try {
-        console.log('Cargando proveedores desde:', API_BASE);
-        const response = await fetch(API_BASE);
+        console.log(`📡 Cargando proveedores desde: ${API_BASE}/proveedores`);
+
+        const response = await fetch(`${API_BASE}/proveedores`);
         if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor: ' + response.status);
+            throw new Error(`Error en la respuesta: ${response.status}`);
         }
+
         const proveedores = await response.json();
-        console.log('Proveedores cargados:', proveedores);
+        console.log(`✅ ${proveedores.length} proveedores cargados`);
         mostrarProveedores(proveedores);
+
     } catch (error) {
-        console.error('Error cargando proveedores:', error);
-        alert('Error al cargar los proveedores: ' + error.message);
+        console.error('❌ Error cargando proveedores:', error);
+        mostrarError('Error al cargar los proveedores: ' + error.message);
     }
 }
 
+// Función para mostrar proveedores en la tabla
 function mostrarProveedores(proveedores) {
     const tbody = document.getElementById('proveedores-body');
     tbody.innerHTML = '';
-
-    if (proveedores.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="7" style="text-align: center;">No hay proveedores registrados</td>`;
-        tbody.appendChild(tr);
-        return;
-    }
 
     proveedores.forEach(proveedor => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${proveedor.id}</td>
             <td>${proveedor.nombre}</td>
-            <td>${proveedor.contacto || '-'}</td>
-            <td>${proveedor.telefono || '-'}</td>
-            <td class="email-cell" title="${proveedor.email || ''}">${proveedor.email || '-'}</td>
-            <td class="direccion-cell" title="${proveedor.direccion || ''}">${proveedor.direccion || '-'}</td>
-            <td class="actions">
+            <td>${proveedor.contacto || ''}</td>
+            <td>${proveedor.telefono || ''}</td>
+            <td>${proveedor.email || ''}</td>
+            <td>${proveedor.direccion || ''}</td>
+            <td>
                 <button onclick="editarProveedor(${proveedor.id})">✏️ Editar</button>
-                <button class="delete" onclick="eliminarProveedor(${proveedor.id})">🗑️ Eliminar</button>
+                <button onclick="eliminarProveedor(${proveedor.id})">🗑️ Eliminar</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-async function guardarProveedor() {
+// Función para crear/editar proveedor
+async function guardarProveedor(event) {
+    event.preventDefault();
+
     const proveedor = {
         nombre: document.getElementById('nombre').value,
         contacto: document.getElementById('contacto').value,
@@ -69,94 +59,113 @@ async function guardarProveedor() {
         direccion: document.getElementById('direccion').value
     };
 
-    const id = document.getElementById('proveedor-id').value;
-
     try {
-        let response;
-        if (editando) {
-            response = await fetch(`${API_BASE}/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(proveedor)
-            });
-        } else {
-            response = await fetch(API_BASE, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(proveedor)
-            });
+        const url = document.getElementById('proveedor-id').value
+            ? `${API_BASE}/proveedores/${document.getElementById('proveedor-id').value}`
+            : `${API_BASE}/proveedores`;
+
+        const method = document.getElementById('proveedor-id').value ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(proveedor)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al guardar el proveedor');
         }
 
-        if (response.ok) {
-            limpiarFormulario();
-            cargarProveedores();
-            alert(editando ? 'Proveedor actualizado correctamente' : 'Proveedor creado correctamente');
-        } else {
-            const error = await response.text();
-            alert('Error: ' + error);
-        }
+        limpiarFormulario();
+        cargarProveedores();
+        mostrarMensaje('Proveedor guardado correctamente');
+
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión: ' + error.message);
+        mostrarError('Error al guardar el proveedor: ' + error.message);
     }
 }
 
-async function editarProveedor(id) {
-    try {
-        const response = await fetch(`${API_BASE}/${id}`);
-        if (!response.ok) {
-            throw new Error('Proveedor no encontrado');
-        }
-        const proveedor = await response.json();
-
-        document.getElementById('proveedor-id').value = proveedor.id;
-        document.getElementById('nombre').value = proveedor.nombre;
-        document.getElementById('contacto').value = proveedor.contacto || '';
-        document.getElementById('telefono').value = proveedor.telefono || '';
-        document.getElementById('email').value = proveedor.email || '';
-        document.getElementById('direccion').value = proveedor.direccion || '';
-
-        document.getElementById('form-title').textContent = 'Editar Proveedor';
-        document.getElementById('submit-btn').textContent = 'Actualizar Proveedor';
-        document.getElementById('cancel-btn').style.display = 'inline-block';
-        editando = true;
-
-        document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-    } catch (error) {
-        console.error('Error cargando proveedor:', error);
-        alert('Error al cargar el proveedor: ' + error.message);
-    }
+// Funciones auxiliares
+function mostrarError(mensaje) {
+    alert('❌ ' + mensaje);
 }
 
-async function eliminarProveedor(id) {
-    if (confirm('¿Estás seguro de eliminar este proveedor?')) {
-        try {
-            const response = await fetch(`${API_BASE}/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
-                cargarProveedores();
-                alert('Proveedor eliminado correctamente');
-            } else {
-                alert('Error eliminando proveedor');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error de conexión: ' + error.message);
-        }
-    }
-}
-
-function cancelarEdicion() {
-    limpiarFormulario();
-    document.getElementById('form-title').textContent = 'Agregar Nuevo Proveedor';
-    document.getElementById('submit-btn').textContent = 'Guardar Proveedor';
-    document.getElementById('cancel-btn').style.display = 'none';
-    editando = false;
+function mostrarMensaje(mensaje) {
+    alert('✅ ' + mensaje);
 }
 
 function limpiarFormulario() {
     document.getElementById('proveedor-form').reset();
     document.getElementById('proveedor-id').value = '';
+    document.getElementById('form-title').textContent = 'Agregar Nuevo Proveedor';
+    document.getElementById('submit-btn').textContent = 'Guardar Proveedor';
+    document.getElementById('cancel-btn').style.display = 'none';
 }
+
+// Funciones de edición y eliminación
+function editarProveedor(id) {
+    fetch(`${API_BASE}/proveedores/${id}`)
+        .then(response => response.json())
+        .then(proveedor => {
+            document.getElementById('proveedor-id').value = proveedor.id;
+            document.getElementById('nombre').value = proveedor.nombre;
+            document.getElementById('contacto').value = proveedor.contacto || '';
+            document.getElementById('telefono').value = proveedor.telefono || '';
+            document.getElementById('email').value = proveedor.email || '';
+            document.getElementById('direccion').value = proveedor.direccion || '';
+
+            document.getElementById('form-title').textContent = 'Editar Proveedor';
+            document.getElementById('submit-btn').textContent = 'Actualizar Proveedor';
+            document.getElementById('cancel-btn').style.display = 'inline-block';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarError('Error al cargar el proveedor para editar');
+        });
+}
+
+function eliminarProveedor(id) {
+    if (confirm('¿Estás seguro de que quieres eliminar este proveedor?')) {
+        fetch(`${API_BASE}/proveedores/${id}`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al eliminar el proveedor');
+                }
+                cargarProveedores();
+                mostrarMensaje('Proveedor eliminado correctamente');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarError('Error al eliminar el proveedor: ' + error.message);
+            });
+    }
+}
+
+// Cancelar edición
+function cancelarEdicion() {
+    limpiarFormulario();
+}
+
+// Cargar proveedores al iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM cargado - Iniciando aplicación Proveedores');
+    cargarProveedores();
+
+    // Configurar el formulario
+    const form = document.getElementById('proveedor-form');
+    if (form) {
+        form.addEventListener('submit', guardarProveedor);
+    }
+
+    // Configurar botón cancelar
+    const cancelBtn = document.getElementById('cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', cancelarEdicion);
+    }
+});
