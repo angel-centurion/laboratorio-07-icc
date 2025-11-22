@@ -1,0 +1,5 @@
+com\ejemplo\proveedores\controller\ProveedorController.class
+com\ejemplo\proveedores\service\ProveedorService.class
+com\ejemplo\proveedores\ProveedoresApplication.class
+com\ejemplo\proveedores\repository\ProveedorRepository.class
+com\ejemplo\proveedores\model\Proveedor.class

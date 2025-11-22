@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <h1>👥 Gestión de Clientes</h1>
+
+    <!-- Formulario para agregar/editar clientes -->
+    <div class="form-section">
+        <h3 id="form-title">Agregar Nuevo Cliente</h3>
+        <form id="cliente-form">
+            <input type="hidden" id="cliente-id">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="text" id="telefono">
+            </div>
+            <div class="form-group">
+                <label for="ciudad">Ciudad:</label>
+                <input type="text" id="ciudad">
+            </div>
+            <button type="submit" id="submit-btn">Guardar Cliente</button>
+            <button type="button" id="cancel-btn" style="display: none;">Cancelar</button>
+        </form>
+    </div>
+
+    <!-- Lista de clientes -->
+    <div>
+        <h3>Lista de Clientes</h3>
+        <button onclick="cargarClientes()">🔄 Actualizar Lista</button>
+        <table id="clientes-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Ciudad</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody id="clientes-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

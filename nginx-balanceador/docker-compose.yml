@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  nginx-balancer:
+    image: nginx:alpine
+    container_name: nginx-lb
+    ports:
+      - "9000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - lab07-network
+
+  # AGREGAR POSTGRES AL DOCKER-COMPOSE
+  postgres:
+    image: postgres:13
+    container_name: postgres-lab07
+    environment:
+      POSTGRES_DB: lab07db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # VOLUMEN PERSISTENTE
+      - ./init-scripts:/docker-entrypoint-initdb.d  # SCRIPTS INICIALES
+    networks:
+      - lab07-network
+
+networks:
+  lab07-network:
+    driver: bridge
+
+volumes:
+  postgres_data:  # VOLUMEN EXTERNO PERSISTENTE

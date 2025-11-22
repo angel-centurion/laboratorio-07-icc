@@ -1,0 +1,22 @@
+-- Insertar 20 registros de proveedores
+INSERT INTO proveedores (nombre, contacto, telefono, email, direccion) VALUES
+                                                                           ('TecnoImport S.A.', 'Carlos Rojas', '+51 1 234 5678', 'ventas@tecnoimport.com', 'Av. Arequipa 123, Lima'),
+                                                                           ('Distribuidora Electron', 'María Torres', '+51 1 345 6789', 'contacto@electron.com', 'Jr. Huancavelica 456, Lima'),
+                                                                           ('Importaciones Delta', 'Roberto Silva', '+51 1 456 7890', 'info@deltaimp.com', 'Av. Brasil 789, Lima'),
+                                                                           ('Suministros Tech', 'Laura Mendoza', '+51 1 567 8901', 'suministros@tech.com', 'Av. Tacna 321, Lima'),
+                                                                           ('Global Components', 'Jorge Herrera', '+51 1 678 9012', 'global@components.com', 'Jr. Callao 654, Lima'),
+                                                                           ('ElectroParts Perú', 'Carmen Ruiz', '+51 1 789 0123', 'electroparts@peru.com', 'Av. Argentina 987, Lima'),
+                                                                           ('Distribuidora Andina', 'Fernando Vargas', '+51 1 890 1234', 'andina@distribuidora.com', 'Jr. Ica 147, Lima'),
+                                                                           ('TecnoSupply', 'Patricia Diaz', '+51 1 901 2345', 'tecno@supply.com', 'Av. Petit Thouars 258, Lima'),
+                                                                           ('Importadora Pacific', 'Ricardo Rojas', '+51 1 012 3456', 'pacific@import.com', 'Jr. Carabaya 369, Lima'),
+                                                                           ('Componentes SAC', 'Gabriela Ortega', '+51 1 123 4567', 'componentes@sac.com', 'Av. Uruguay 741, Lima'),
+                                                                           ('ElectroWorld', 'Daniel Montes', '+51 1 234 5678', 'electro@world.com', 'Jr. Moquegua 852, Lima'),
+                                                                           ('TechSolutions', 'Isabel Leon', '+51 1 345 6789', 'tech@solutions.com', 'Av. Salaverry 963, Lima'),
+                                                                           ('Distribuidora Norte', 'Hector Paredes', '+51 1 456 7890', 'norte@distribuidora.com', 'Jr. Trujillo 159, Lima'),
+                                                                           ('Importaciones Sur', 'Monica Salas', '+51 1 567 8901', 'sur@importaciones.com', 'Av. Bolivia 753, Lima'),
+                                                                           ('Global Tech', 'Sofia Ramirez', '+51 1 678 9012', 'global@tech.com', 'Jr. Ayacucho 486, Lima'),
+                                                                           ('Electronic Parts', 'Miguel Torres', '+51 1 789 0123', 'parts@electronic.com', 'Av. Garcilaso 275, Lima'),
+                                                                           ('Suministros Pro', 'Elena Castro', '+51 1 890 1234', 'pro@suministros.com', 'Jr. Huánuco 684, Lima'),
+                                                                           ('Componentes Express', 'Roberto Silva', '+51 1 901 2345', 'express@componentes.com', 'Av. Nicolás de Piérola 397, Lima'),
+                                                                           ('TechImport', 'Laura Mendoza', '+51 1 012 3456', 'tech@import.com', 'Jr. Camaná 518, Lima'),
+                                                                           ('Distribuidora Central', 'Jorge Herrera', '+51 1 123 4567', 'central@distribuidora.com', 'Av. Abancay 629, Lima');
